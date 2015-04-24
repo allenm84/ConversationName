@@ -35,6 +35,7 @@
       this.btnNext = new System.Windows.Forms.Button();
       this.btnRefresh = new System.Windows.Forms.Button();
       this.btnRegenerate = new System.Windows.Forms.Button();
+      this.btnToday = new System.Windows.Forms.Button();
       this.tableLayoutPanel1.SuspendLayout();
       this.tableLayoutPanel2.SuspendLayout();
       this.SuspendLayout();
@@ -69,16 +70,18 @@
       // 
       // tableLayoutPanel2
       // 
-      this.tableLayoutPanel2.ColumnCount = 5;
+      this.tableLayoutPanel2.ColumnCount = 6;
       this.tableLayoutPanel2.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 40F));
       this.tableLayoutPanel2.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 40F));
+      this.tableLayoutPanel2.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 80F));
       this.tableLayoutPanel2.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
       this.tableLayoutPanel2.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 80F));
       this.tableLayoutPanel2.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 80F));
       this.tableLayoutPanel2.Controls.Add(this.btnPrevious, 0, 0);
       this.tableLayoutPanel2.Controls.Add(this.btnNext, 1, 0);
-      this.tableLayoutPanel2.Controls.Add(this.btnRefresh, 3, 0);
-      this.tableLayoutPanel2.Controls.Add(this.btnRegenerate, 4, 0);
+      this.tableLayoutPanel2.Controls.Add(this.btnRefresh, 4, 0);
+      this.tableLayoutPanel2.Controls.Add(this.btnRegenerate, 5, 0);
+      this.tableLayoutPanel2.Controls.Add(this.btnToday, 2, 0);
       this.tableLayoutPanel2.Dock = System.Windows.Forms.DockStyle.Fill;
       this.tableLayoutPanel2.Location = new System.Drawing.Point(0, 45);
       this.tableLayoutPanel2.Margin = new System.Windows.Forms.Padding(0);
@@ -90,9 +93,10 @@
       // 
       // btnPrevious
       // 
+      this.btnPrevious.Dock = System.Windows.Forms.DockStyle.Fill;
       this.btnPrevious.Location = new System.Drawing.Point(3, 3);
       this.btnPrevious.Name = "btnPrevious";
-      this.btnPrevious.Size = new System.Drawing.Size(34, 23);
+      this.btnPrevious.Size = new System.Drawing.Size(34, 24);
       this.btnPrevious.TabIndex = 0;
       this.btnPrevious.Text = "<";
       this.btnPrevious.UseVisualStyleBackColor = true;
@@ -100,9 +104,10 @@
       // 
       // btnNext
       // 
+      this.btnNext.Dock = System.Windows.Forms.DockStyle.Fill;
       this.btnNext.Location = new System.Drawing.Point(43, 3);
       this.btnNext.Name = "btnNext";
-      this.btnNext.Size = new System.Drawing.Size(34, 23);
+      this.btnNext.Size = new System.Drawing.Size(34, 24);
       this.btnNext.TabIndex = 1;
       this.btnNext.Text = ">";
       this.btnNext.UseVisualStyleBackColor = true;
@@ -110,9 +115,10 @@
       // 
       // btnRefresh
       // 
+      this.btnRefresh.Dock = System.Windows.Forms.DockStyle.Fill;
       this.btnRefresh.Location = new System.Drawing.Point(229, 3);
       this.btnRefresh.Name = "btnRefresh";
-      this.btnRefresh.Size = new System.Drawing.Size(74, 23);
+      this.btnRefresh.Size = new System.Drawing.Size(74, 24);
       this.btnRefresh.TabIndex = 2;
       this.btnRefresh.Text = "Refresh";
       this.btnRefresh.UseVisualStyleBackColor = true;
@@ -120,13 +126,25 @@
       // 
       // btnRegenerate
       // 
+      this.btnRegenerate.Dock = System.Windows.Forms.DockStyle.Fill;
       this.btnRegenerate.Location = new System.Drawing.Point(309, 3);
       this.btnRegenerate.Name = "btnRegenerate";
-      this.btnRegenerate.Size = new System.Drawing.Size(74, 23);
+      this.btnRegenerate.Size = new System.Drawing.Size(74, 24);
       this.btnRegenerate.TabIndex = 3;
       this.btnRegenerate.Text = "Regenerate";
       this.btnRegenerate.UseVisualStyleBackColor = true;
       this.btnRegenerate.Click += new System.EventHandler(this.btnRegenerate_Click);
+      // 
+      // btnToday
+      // 
+      this.btnToday.Dock = System.Windows.Forms.DockStyle.Fill;
+      this.btnToday.Location = new System.Drawing.Point(83, 3);
+      this.btnToday.Name = "btnToday";
+      this.btnToday.Size = new System.Drawing.Size(74, 24);
+      this.btnToday.TabIndex = 4;
+      this.btnToday.Text = "Today";
+      this.btnToday.UseVisualStyleBackColor = true;
+      this.btnToday.Click += new System.EventHandler(this.btnToday_Click);
       // 
       // MainForm
       // 
@@ -154,6 +172,7 @@
     private System.Windows.Forms.Button btnNext;
     private System.Windows.Forms.Button btnRefresh;
     private System.Windows.Forms.Button btnRegenerate;
+    private System.Windows.Forms.Button btnToday;
   }
 }
 

@@ -49,17 +49,13 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Data\ConversationNames.cs" />
+    <Compile Include="Data\ConversationNamesSerializer.cs" />
     <Compile Include="Dialogs\BaseForm.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="Dialogs\BaseForm.Designer.cs">
       <DependentUpon>BaseForm.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Dialogs\EnterPasswordDialog.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="Dialogs\EnterPasswordDialog.Designer.cs">
-      <DependentUpon>EnterPasswordDialog.cs</DependentUpon>
     </Compile>
     <Compile Include="MainForm.cs">
       <SubType>Form</SubType>
@@ -72,9 +68,6 @@
     <Compile Include="Library\Tools.cs" />
     <EmbeddedResource Include="Dialogs\BaseForm.resx">
       <DependentUpon>BaseForm.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Dialogs\EnterPasswordDialog.resx">
-      <DependentUpon>EnterPasswordDialog.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="MainForm.resx">
       <DependentUpon>MainForm.cs</DependentUpon>

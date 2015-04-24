@@ -1,65 +1,55 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
 using System.IO;
 using System.Linq;
-using System.Runtime.Serialization;
-using System.Security.Cryptography;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using ConversationNames = System.Collections.Generic.Dictionary<System.DateTime, string>;
 
 namespace ConversationName
 {
   public partial class MainForm : BaseForm
   {
     private ConversationNames convoNames;
+    private ConversationNamesSerializer cns;
+
     private string filepath;
-    private SymmetricAlgorithm encryption;
-    private DataContractSerializer dcs;
-    private Lazy<string> appFile;
     private DateTime currentKey = DateTime.Today;
     private bool shutDownRequested = false;
 
     public MainForm()
     {
       InitializeComponent();
-      dcs = new DataContractSerializer(typeof(ConversationNames));
-      appFile = new Lazy<string>(GetAppFile, true);
+      InitializeDatabase();
     }
 
-    private string GetAppFile()
+    private async void InitializeDatabase()
     {
-      var appData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-      var appDir = Path.Combine(appData, "ConversationName");
-      if (!Directory.Exists(appDir))
+      cns = new ConversationNamesSerializer();
+      await Task.Yield();
+
+      if (!EnsureDatabaseIsCreated())
       {
-        Directory.CreateDirectory(appDir);
+        Shutdown();
+        return;
       }
 
-      return Path.Combine(appDir, "data.bin");
+      if (!LoadConvoNames())
+      {
+        Shutdown();
+        return;
+      }
+      else
+      {
+        DoRefresh();
+      }
     }
 
-    private void Shutdown()
+    private async void Shutdown()
     {
       shutDownRequested = true;
       Enabled = false;
-      BeginInvoke(new Action(Close));
-    }
-
-    private void ProcessEnterPasswordInput(EnterPasswordDialog dlg)
-    {
-      string password = dlg.Password;
-      InitializeEncryption(password);
-
-      if (dlg.SavePassword)
-      {
-        SavePassword(password);
-      }
+      await Task.Yield();
+      Close();
     }
 
     private Stream AttemptToCreate(string filepath)
@@ -100,10 +90,7 @@ namespace ConversationName
       {
         try
         {
-          using (var crypto = new CryptoStream(stream, encryption.CreateEncryptor(), CryptoStreamMode.Write))
-          {
-            dcs.WriteObject(crypto, convoNames);
-          }
+          cns.Write(stream, convoNames);
         }
         catch
         {
@@ -112,97 +99,15 @@ namespace ConversationName
       }
     }
 
-    private void SavePassword(string password)
-    {
-      var bytes = Encoding.UTF8.GetBytes(password);
-      var data = ProtectedData.Protect(bytes, null, DataProtectionScope.CurrentUser);
-      File.WriteAllBytes(appFile.Value, data);
-    }
-
-    private static char[] CreateSalt(string password)
-    {
-      return Enumerable.Repeat(password, password.Length).SelectMany(c => c).ToArray();
-    }
-
-    private void InitializeEncryption(string password)
-    {
-      encryption = new RijndaelManaged();
-      var salt = CreateSalt(password);
-      var key = new Rfc2898DeriveBytes(password, Encoding.ASCII.GetBytes(salt));
-      encryption.Key = key.GetBytes(encryption.KeySize / 8);
-      encryption.IV = key.GetBytes(encryption.BlockSize / 8);
-      encryption.Padding = PaddingMode.PKCS7;
-    }
-
     private bool EnsureDatabaseIsCreated()
     {
       filepath = Path.Combine(Application.StartupPath, "dbase.bin");
       if (!File.Exists(filepath))
       {
-        using (var dlg = new EnterPasswordDialog())
-        {
-          dlg.Text = "Create Database";
-          dlg.ConfirmPassword = true;
-
-          if (dlg.ShowDialog(this) == System.Windows.Forms.DialogResult.OK)
-          {
-            ProcessEnterPasswordInput(dlg);
-            convoNames = new ConversationNames();
-            SaveConversationNames();
-          }
-          else
-          {
-            // the user did not click "OK", so the database will not be created
-            return false;
-          }
-        }
+        convoNames = new ConversationNames();
+        SaveConversationNames();
       }
 
-      return true;
-    }
-
-    private bool EnsureEncryptionIsCreated()
-    {
-      if (encryption == null)
-      {
-        // has the password been saved?
-        var path = appFile.Value;
-        if (File.Exists(path))
-        {
-          try
-          {
-            var cipher = File.ReadAllBytes(path);
-            var bytes = ProtectedData.Unprotect(cipher, null, DataProtectionScope.CurrentUser);
-            InitializeEncryption(Encoding.UTF8.GetString(bytes));
-
-            // the encryption has been initialized, so return
-            return true;
-          }
-          catch(Exception ex)
-          {
-            // delete the file and fall through
-            MessageBox.Show(this, "Unable to read the saved password because " + ex.Message, "Error", 
-              MessageBoxButtons.OK, MessageBoxIcon.Error);
-            File.Delete(path);
-          }
-        }
-
-        // if we get here, we need the password so we can initialize the encryption
-        using (var dlg = new EnterPasswordDialog())
-        {
-          dlg.Text = "Enter Password";
-          dlg.ConfirmPassword = false;
-
-          if (dlg.ShowDialog(this) == System.Windows.Forms.DialogResult.OK)
-          {
-            ProcessEnterPasswordInput(dlg);
-          }
-          else
-          {
-            return false;
-          }
-        }
-      }
       return true;
     }
 
@@ -214,14 +119,11 @@ namespace ConversationName
       {
         try
         {
-          using (var crypto = new CryptoStream(stream, encryption.CreateDecryptor(), CryptoStreamMode.Read))
-          {
-            convoNames = dcs.ReadObject(crypto) as ConversationNames;
-          }
+          convoNames = cns.Read(stream);
         }
         catch (Exception ex)
         {
-          string message = string.Format("Unable to load because {0}. Make sure you entered the right password", ex.Message);
+          string message = string.Format("Unable to load because {0}", ex.Message);
           MessageBox.Show(this, message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
           return false;
         }
@@ -276,40 +178,6 @@ namespace ConversationName
       }
     }
 
-    protected override void OnShown(EventArgs e)
-    {
-      base.OnShown(e);
-
-      if (!EnsureDatabaseIsCreated())
-      {
-        Shutdown();
-        return;
-      }
-
-      if (!EnsureEncryptionIsCreated())
-      {
-        Shutdown();
-        return;
-      }
-
-      if (!LoadConvoNames())
-      {
-        string saved = appFile.Value;
-        if (File.Exists(saved))
-        {
-          // don't try the wrong password next time
-          File.Delete(appFile.Value);
-        }
-
-        Shutdown();
-        return;
-      }
-      else
-      {
-        DoRefresh();
-      }
-    }
-
     protected override void OnFormClosing(FormClosingEventArgs e)
     {
       base.OnFormClosing(e);
@@ -345,6 +213,12 @@ namespace ConversationName
     private void btnNext_Click(object sender, EventArgs e)
     {
       MoveToKey(1, "There aren't any later entries", "Next");
+    }
+
+    private void btnToday_Click(object sender, EventArgs e)
+    {
+      currentKey = DateTime.Today;
+      DoRefresh();
     }
   }
 }
